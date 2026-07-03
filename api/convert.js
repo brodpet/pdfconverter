@@ -1,19 +1,10 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { createCanvas } from "@napi-rs/canvas";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-
-// pdf.mjs lives at <pdfjs-dist>/legacy/build/pdf.mjs; standard_fonts and the worker are siblings/under it
-const PDFJS_LEGACY_BUILD_DIR = path.dirname(fileURLToPath(import.meta.resolve("pdfjs-dist/legacy/build/pdf.mjs")));
-const STANDARD_FONT_DATA_URL = (
-  path.join(PDFJS_LEGACY_BUILD_DIR, "..", "..", "standard_fonts") + path.sep
-)
-  .split(path.sep)
-  .join("/");
-
-GlobalWorkerOptions.workerSrc = import.meta.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+const RENDERER_HTML_PATH = fileURLToPath(new URL("./_renderer.html", import.meta.url));
 
 export default {
   async fetch(request) {
@@ -44,24 +35,33 @@ export default {
       return Response.json({ error: "format must be 'jpeg' or 'png'" }, { status: 400 });
     }
 
+    let browser;
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await getDocument({
-        data: new Uint8Array(arrayBuffer),
-        standardFontDataUrl: STANDARD_FONT_DATA_URL,
-      }).promise;
-      const page = await pdf.getPage(1);
+      const bytes = Array.from(new Uint8Array(arrayBuffer));
 
-      const viewport = page.getViewport({ scale: 3 });
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const ctx = canvas.getContext("2d");
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
 
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      const page = await browser.newPage();
+      await page.goto("file://" + RENDERER_HTML_PATH);
+      await page.waitForFunction("window.rendererReady === true");
 
       const mimeType = format === "png" ? "image/png" : "image/jpeg";
-      const buffer = format === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", 0.97);
+      const quality = format === "png" ? undefined : 0.97;
+
+      const dataUrl = await page.evaluate(
+        (bytes, mimeType, quality) => window.renderPdfToDataUrl(new Uint8Array(bytes), mimeType, quality),
+        bytes,
+        mimeType,
+        quality
+      );
+
+      const base64 = dataUrl.split(",")[1];
+      const buffer = Buffer.from(base64, "base64");
 
       return new Response(buffer, {
         status: 200,
@@ -69,6 +69,8 @@ export default {
       });
     } catch (err) {
       return Response.json({ error: "Conversion failed", detail: err.message }, { status: 500 });
+    } finally {
+      if (browser) await browser.close();
     }
   },
 };
