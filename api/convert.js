@@ -1,6 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { createCanvas } from "canvas";
+import { createCanvas } from "@napi-rs/canvas";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -55,14 +55,13 @@ export default {
       const viewport = page.getViewport({ scale: 3 });
       const canvas = createCanvas(viewport.width, viewport.height);
       const ctx = canvas.getContext("2d");
-      ctx.patternQuality = "best";
-      ctx.quality = "best";
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       await page.render({ canvasContext: ctx, viewport }).promise;
 
       const mimeType = format === "png" ? "image/png" : "image/jpeg";
-      const buffer =
-        format === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", { quality: 0.97 });
+      const buffer = format === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", 0.97);
 
       return new Response(buffer, {
         status: 200,
