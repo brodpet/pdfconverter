@@ -15,6 +15,8 @@ const convertBtn = document.getElementById("convertBtn");
 const errorEl = document.getElementById("error");
 const canvas = document.getElementById("canvas");
 const downloadLink = document.getElementById("downloadLink");
+const fileNameEl = document.getElementById("fileName");
+const statusEl = document.getElementById("status");
 
 let currentFile = null;
 
@@ -50,6 +52,8 @@ convertBtn.addEventListener("click", () => {
 function handleFile(file) {
   hideError();
   downloadLink.hidden = true;
+  statusEl.hidden = true;
+  fileNameEl.hidden = true;
 
   if (file.type !== "application/pdf") {
     showError("Please select a PDF file.");
@@ -61,12 +65,15 @@ function handleFile(file) {
   }
 
   currentFile = file;
+  fileNameEl.textContent = `Selected: ${file.name}`;
+  fileNameEl.hidden = false;
   controls.hidden = false;
 }
 
 async function convertFile(file) {
   hideError();
   downloadLink.hidden = true;
+  statusEl.hidden = true;
   convertBtn.disabled = true;
   convertBtn.textContent = "Converting…";
 
@@ -91,6 +98,7 @@ async function convertFile(file) {
     downloadLink.href = url;
     downloadLink.download = `converted.${ext}`;
     downloadLink.hidden = false;
+    statusEl.hidden = false;
   } catch (err) {
     showError("Couldn't convert this PDF. It may be corrupt or unsupported.");
   } finally {

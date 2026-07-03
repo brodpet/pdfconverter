@@ -114,6 +114,21 @@ button:hover { opacity: 0.9; }
   margin-top: 16px;
 }
 
+.file-name {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.status {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #34c759;
+}
+
 canvas {
   display: none;
 }

@@ -16,6 +16,8 @@
       <input type="file" id="fileInput" accept="application/pdf" hidden>
     </div>
 
+    <p id="fileName" class="file-name" hidden></p>
+
     <div id="controls" class="controls" hidden>
       <label>
         Format
@@ -36,6 +38,8 @@
     <p id="error" class="error" hidden></p>
 
     <canvas id="canvas" hidden></canvas>
+
+    <p id="status" class="status" hidden>&#10003; Conversion ready</p>
 
     <a id="downloadLink" class="download" hidden download="converted.jpg">Download Image</a>
   </main>
