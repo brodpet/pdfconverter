@@ -52,14 +52,16 @@ export default {
       }).promise;
       const page = await pdf.getPage(1);
 
-      const viewport = page.getViewport({ scale: 2 });
+      const viewport = page.getViewport({ scale: 3 });
       const canvas = createCanvas(viewport.width, viewport.height);
       const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       await page.render({ canvasContext: ctx, viewport }).promise;
 
       const mimeType = format === "png" ? "image/png" : "image/jpeg";
-      const buffer = format === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", 0.92);
+      const buffer = format === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", 0.97);
 
       return new Response(buffer, {
         status: 200,
