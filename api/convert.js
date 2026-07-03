@@ -1,17 +1,19 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import { createCanvas } from "@napi-rs/canvas";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
-// pdf.mjs lives at <pdfjs-dist>/legacy/build/pdf.mjs; standard_fonts is at <pdfjs-dist>/standard_fonts
+// pdf.mjs lives at <pdfjs-dist>/legacy/build/pdf.mjs; standard_fonts and the worker are siblings/under it
 const PDFJS_LEGACY_BUILD_DIR = path.dirname(fileURLToPath(import.meta.resolve("pdfjs-dist/legacy/build/pdf.mjs")));
 const STANDARD_FONT_DATA_URL = (
   path.join(PDFJS_LEGACY_BUILD_DIR, "..", "..", "standard_fonts") + path.sep
 )
   .split(path.sep)
   .join("/");
+
+GlobalWorkerOptions.workerSrc = import.meta.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
 
 export default {
   async fetch(request) {
@@ -47,7 +49,6 @@ export default {
       const pdf = await getDocument({
         data: new Uint8Array(arrayBuffer),
         standardFontDataUrl: STANDARD_FONT_DATA_URL,
-        disableWorker: true,
       }).promise;
       const page = await pdf.getPage(1);
 
