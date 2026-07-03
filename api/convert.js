@@ -1,14 +1,14 @@
 import path from "path";
-import { createRequire } from "module";
+import { fileURLToPath } from "url";
 import { createCanvas } from "@napi-rs/canvas";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
-const require = createRequire(import.meta.url);
-
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
+// pdf.mjs lives at <pdfjs-dist>/legacy/build/pdf.mjs; standard_fonts is at <pdfjs-dist>/standard_fonts
+const PDFJS_LEGACY_BUILD_DIR = path.dirname(fileURLToPath(import.meta.resolve("pdfjs-dist/legacy/build/pdf.mjs")));
 const STANDARD_FONT_DATA_URL = (
-  path.join(path.dirname(require.resolve("pdfjs-dist/package.json")), "standard_fonts") + path.sep
+  path.join(PDFJS_LEGACY_BUILD_DIR, "..", "..", "standard_fonts") + path.sep
 )
   .split(path.sep)
   .join("/");
