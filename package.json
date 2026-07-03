@@ -2,6 +2,7 @@
   "name": "pdfconverter",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "pdfjs-dist": "^5.4.149",
     "@napi-rs/canvas": "^0.1.53"
