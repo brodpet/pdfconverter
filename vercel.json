@@ -3,7 +3,7 @@
     "api/convert.js": {
       "includeFiles": "api/_renderer.html",
       "memory": 2048,
-      "maxDuration": 120
+      "maxDuration": 60
     }
   }
 }

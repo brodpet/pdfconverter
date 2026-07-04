@@ -3,17 +3,16 @@
 <head><meta charset="UTF-8"></head>
 <body>
 <canvas id="canvas"></canvas>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
   import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs";
 
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
 
-  const MAX_PAGES = 20;
+  window.renderFirstPage = async function (bytes, format, quality) {
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const page = await pdf.getPage(1);
 
-  async function renderPage(pdf, pageNumber, format, quality) {
-    const page = await pdf.getPage(pageNumber);
     const viewport = page.getViewport({ scale: 3 });
     const canvas = document.getElementById("canvas");
     canvas.width = viewport.width;
@@ -23,26 +22,6 @@
     await page.render({ canvasContext: ctx, viewport }).promise;
 
     return canvas.toDataURL(format, quality);
-  }
-
-  window.renderPdf = async function (bytes, format, quality) {
-    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-    const pageCount = Math.min(pdf.numPages, MAX_PAGES);
-
-    if (pageCount === 1) {
-      const dataUrl = await renderPage(pdf, 1, format, quality);
-      return { kind: "image", dataUrl, totalPages: pdf.numPages };
-    }
-
-    const ext = format === "image/png" ? "png" : "jpg";
-    const zip = new JSZip();
-    for (let i = 1; i <= pageCount; i++) {
-      const dataUrl = await renderPage(pdf, i, format, quality);
-      const base64 = dataUrl.split(",")[1];
-      zip.file(`page-${i}.${ext}`, base64, { base64: true });
-    }
-    const zipBase64 = await zip.generateAsync({ type: "base64" });
-    return { kind: "zip", dataUrl: "data:application/zip;base64," + zipBase64, totalPages: pdf.numPages, pageCount };
   };
 
   window.rendererReady = true;

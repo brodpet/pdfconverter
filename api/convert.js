@@ -59,31 +59,18 @@ export default {
       const mimeType = format === "png" ? "image/png" : "image/jpeg";
       const quality = format === "png" ? undefined : 1.0;
 
-      const result = await page.evaluate(
-        (bytes, mimeType, quality) => window.renderPdf(new Uint8Array(bytes), mimeType, quality),
+      const dataUrl = await page.evaluate(
+        (bytes, mimeType, quality) => window.renderFirstPage(new Uint8Array(bytes), mimeType, quality),
         bytes,
         mimeType,
         quality
       );
 
-      const base64 = result.dataUrl.split(",")[1];
+      const base64 = dataUrl.split(",")[1];
       const buffer = Buffer.from(base64, "base64");
       const ext = format === "png" ? "png" : "jpg";
-
-      if (result.kind === "zip") {
-        const outputName = `${baseName(file.name)}.zip`;
-        return new Response(buffer, {
-          status: 200,
-          headers: {
-            "Content-Type": "application/zip",
-            "Content-Disposition": `attachment; filename="${outputName}"`,
-            "X-Total-Pages": String(result.totalPages),
-            "X-Converted-Pages": String(result.pageCount),
-          },
-        });
-      }
-
       const outputName = `${baseName(file.name)}.${ext}`;
+
       return new Response(buffer, {
         status: 200,
         headers: {
