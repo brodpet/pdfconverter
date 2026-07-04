@@ -3,7 +3,7 @@ import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
@@ -80,7 +80,7 @@ function handleFile(file) {
     return;
   }
   if (file.size > MAX_FILE_SIZE) {
-    showError("File is too large. Please use a PDF under 50MB.");
+    showError("File is too large. Please use a PDF under 20MB.");
     return;
   }
 
