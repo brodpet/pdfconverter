@@ -9,8 +9,10 @@ const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
 const controls = document.getElementById("controls");
 const formatSelect = document.getElementById("format");
+const formatChoices = document.querySelectorAll('input[name="formatChoice"]');
 const qualityLabel = document.getElementById("qualityLabel");
 const qualityInput = document.getElementById("quality");
+const qualityValue = document.getElementById("qualityValue");
 const convertBtn = document.getElementById("convertBtn");
 const errorEl = document.getElementById("error");
 const canvas = document.getElementById("canvas");
@@ -21,6 +23,13 @@ const statusEl = document.getElementById("status");
 let currentFile = null;
 
 dropzone.addEventListener("click", () => fileInput.click());
+
+dropzone.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    fileInput.click();
+  }
+});
 
 dropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
@@ -42,7 +51,18 @@ fileInput.addEventListener("change", () => {
 });
 
 formatSelect.addEventListener("change", () => {
-  qualityLabel.hidden = formatSelect.value !== "image/jpeg";
+  syncFormatUi(formatSelect.value);
+});
+
+formatChoices.forEach((choice) => {
+  choice.addEventListener("change", () => {
+    formatSelect.value = choice.value;
+    syncFormatUi(choice.value);
+  });
+});
+
+qualityInput.addEventListener("input", () => {
+  qualityValue.textContent = `${Math.round(parseFloat(qualityInput.value) * 100)}%`;
 });
 
 convertBtn.addEventListener("click", () => {
@@ -52,7 +72,7 @@ convertBtn.addEventListener("click", () => {
 function handleFile(file) {
   hideError();
   downloadLink.hidden = true;
-  statusEl.hidden = true;
+  setStatus("Waiting for a PDF");
   fileNameEl.hidden = true;
 
   if (file.type !== "application/pdf") {
@@ -65,17 +85,18 @@ function handleFile(file) {
   }
 
   currentFile = file;
-  fileNameEl.textContent = `Selected: ${file.name}`;
+  fileNameEl.innerHTML = `<strong>${escapeHtml(file.name)}</strong> <span class="file-meta">${formatFileSize(file.size)}</span>`;
   fileNameEl.hidden = false;
   controls.hidden = false;
+  setStatus("PDF loaded. Choose an output and convert.");
 }
 
 async function convertFile(file) {
   hideError();
   downloadLink.hidden = true;
-  statusEl.hidden = true;
+  setStatus("Rendering the first page...", "working");
   convertBtn.disabled = true;
-  convertBtn.textContent = "Converting…";
+  convertBtn.textContent = "Converting...";
 
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -98,12 +119,13 @@ async function convertFile(file) {
     downloadLink.href = url;
     downloadLink.download = `converted.${ext}`;
     downloadLink.hidden = false;
-    statusEl.hidden = false;
+    setStatus(`Ready as ${ext.toUpperCase()}.`, "ready");
   } catch (err) {
     showError("Couldn't convert this PDF. It may be corrupt or unsupported.");
+    setStatus("Conversion stopped. Check the file and try again.");
   } finally {
     convertBtn.disabled = false;
-    convertBtn.textContent = "Convert";
+    convertBtn.textContent = "Convert page";
   }
 }
 
@@ -124,4 +146,27 @@ function showError(message) {
 
 function hideError() {
   errorEl.hidden = true;
+}
+
+function syncFormatUi(format) {
+  qualityLabel.hidden = format !== "image/jpeg";
+  formatChoices.forEach((choice) => {
+    choice.checked = choice.value === format;
+  });
+}
+
+function setStatus(message, state = "") {
+  statusEl.textContent = message;
+  statusEl.className = `status ${state}`.trim();
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function escapeHtml(value) {
+  const span = document.createElement("span");
+  span.textContent = value;
+  return span.innerHTML;
 }
