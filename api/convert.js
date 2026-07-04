@@ -6,6 +6,12 @@ import chromium from "@sparticuz/chromium";
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const RENDERER_HTML_PATH = fileURLToPath(new URL("./_renderer.html", import.meta.url));
 
+function baseName(fileName) {
+  const withoutExt = (fileName || "").replace(/\.pdf$/i, "");
+  const safe = withoutExt.replace(/["\r\n]/g, "").trim();
+  return safe || "converted";
+}
+
 export default {
   async fetch(request) {
     if (request.method !== "POST") {
@@ -63,9 +69,15 @@ export default {
       const base64 = dataUrl.split(",")[1];
       const buffer = Buffer.from(base64, "base64");
 
+      const ext = format === "png" ? "png" : "jpg";
+      const outputName = `${baseName(file.name)}.${ext}`;
+
       return new Response(buffer, {
         status: 200,
-        headers: { "Content-Type": mimeType },
+        headers: {
+          "Content-Type": mimeType,
+          "Content-Disposition": `inline; filename="${outputName}"`,
+        },
       });
     } catch (err) {
       return Response.json({ error: "Conversion failed", detail: err.message }, { status: 500 });

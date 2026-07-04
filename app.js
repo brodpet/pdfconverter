@@ -117,7 +117,7 @@ async function convertFile(file) {
     const url = URL.createObjectURL(blob);
     const ext = format === "image/png" ? "png" : "jpg";
     downloadLink.href = url;
-    downloadLink.download = `converted.${ext}`;
+    downloadLink.download = `${baseName(file.name)}.${ext}`;
     downloadLink.hidden = false;
     setStatus(`Ready as ${ext.toUpperCase()}.`, "ready");
   } catch (err) {
@@ -169,4 +169,9 @@ function escapeHtml(value) {
   const span = document.createElement("span");
   span.textContent = value;
   return span.innerHTML;
+}
+
+function baseName(fileName) {
+  const withoutExt = fileName.replace(/\.pdf$/i, "");
+  return withoutExt || "converted";
 }
