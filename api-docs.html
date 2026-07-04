@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Docs — PDF to Image Converter</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card docs-card">
+    <a href="index.html" class="back-link">&larr; Back to converter</a>
+    <h1>API</h1>
+    <p class="subtitle">Convert a PDF's first page to JPEG or PNG over plain HTTP &mdash; from n8n, curl, or any tool that can make a POST request.</p>
+
+    <div class="status-grid">
+      <div class="status-tile">
+        <div class="label">Status</div>
+        <div class="value"><span class="status-dot"></span>Live</div>
+      </div>
+      <div class="status-tile">
+        <div class="label">Formats</div>
+        <div class="value">JPEG, PNG</div>
+      </div>
+      <div class="status-tile">
+        <div class="label">Max file size</div>
+        <div class="value">20 MB</div>
+      </div>
+      <div class="status-tile">
+        <div class="label">Pages converted</div>
+        <div class="value">First page only</div>
+      </div>
+    </div>
+
+    <h2>Request</h2>
+    <div class="code-block" id="curlBlock">curl -X POST https://pdfconverter-nu.vercel.app/api/convert \
+  -F "file=@yourfile.pdf" \
+  -F "format=jpeg" \
+  -o output.jpg<button class="copy-btn" id="copyBtn">Copy</button></div>
+
+    <h2>Parameters</h2>
+    <table class="params">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="inline">file</code></td>
+          <td>form-data file</td>
+          <td>Yes</td>
+          <td>The PDF to convert.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">format</code></td>
+          <td>form-data text</td>
+          <td>No</td>
+          <td>Output format: <code class="inline">jpeg</code> (default) or <code class="inline">png</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Response</h2>
+    <p class="subtitle">On success, returns the rendered image directly as the response body (<code class="inline">Content-Type: image/jpeg</code> or <code class="inline">image/png</code>). On error, returns a JSON body with an <code class="inline">error</code> field and a 4xx/5xx status code.</p>
+  </main>
+
+  <script>
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      const text = document.getElementById("curlBlock").firstChild.textContent;
+      navigator.clipboard.writeText(text.trim()).then(() => {
+        const btn = document.getElementById("copyBtn");
+        const original = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => (btn.textContent = original), 1500);
+      });
+    });
+  </script>
+</body>
+</html>
