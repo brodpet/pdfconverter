@@ -328,30 +328,6 @@ h1 {
   color: var(--action-dark);
 }
 
-.quality-row {
-  display: grid;
-  gap: 10px;
-}
-
-.quality-row > span {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.quality-value {
-  color: var(--ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.86rem;
-  font-weight: 750;
-}
-
-input[type="range"] {
-  width: 100%;
-  accent-color: var(--action);
-}
-
 .primary-action,
 .download {
   min-height: 50px;

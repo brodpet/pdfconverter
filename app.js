@@ -10,9 +10,6 @@ const fileInput = document.getElementById("fileInput");
 const controls = document.getElementById("controls");
 const formatSelect = document.getElementById("format");
 const formatChoices = document.querySelectorAll('input[name="formatChoice"]');
-const qualityLabel = document.getElementById("qualityLabel");
-const qualityInput = document.getElementById("quality");
-const qualityValue = document.getElementById("qualityValue");
 const convertBtn = document.getElementById("convertBtn");
 const errorEl = document.getElementById("error");
 const canvas = document.getElementById("canvas");
@@ -61,10 +58,6 @@ formatChoices.forEach((choice) => {
   });
 });
 
-qualityInput.addEventListener("input", () => {
-  qualityValue.textContent = `${Math.round(parseFloat(qualityInput.value) * 100)}%`;
-});
-
 convertBtn.addEventListener("click", () => {
   if (currentFile) convertFile(currentFile);
 });
@@ -111,8 +104,7 @@ async function convertFile(file) {
     await page.render({ canvasContext: ctx, viewport }).promise;
 
     const format = formatSelect.value;
-    const quality = parseFloat(qualityInput.value);
-    const blob = await canvasToBlob(canvas, format, quality);
+    const blob = await canvasToBlob(canvas, format, 1.0);
 
     const url = URL.createObjectURL(blob);
     const ext = format === "image/png" ? "png" : "jpg";
@@ -149,7 +141,6 @@ function hideError() {
 }
 
 function syncFormatUi(format) {
-  qualityLabel.hidden = format !== "image/jpeg";
   formatChoices.forEach((choice) => {
     choice.checked = choice.value === format;
   });

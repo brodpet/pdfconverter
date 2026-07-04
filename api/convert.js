@@ -57,7 +57,7 @@ export default {
       await page.waitForFunction("window.rendererReady === true");
 
       const mimeType = format === "png" ? "image/png" : "image/jpeg";
-      const quality = format === "png" ? undefined : 0.97;
+      const quality = format === "png" ? undefined : 1.0;
 
       const dataUrl = await page.evaluate(
         (bytes, mimeType, quality) => window.renderPdfToDataUrl(new Uint8Array(bytes), mimeType, quality),
