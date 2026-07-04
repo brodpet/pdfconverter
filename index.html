@@ -22,8 +22,8 @@
     <section class="hero-layout" aria-labelledby="pageTitle">
       <div class="intro">
         <p class="eyebrow">Browser converter</p>
-        <h1 id="pageTitle">Turn one PDF page into a clean image file.</h1>
-        <p class="intro-copy">Drop in a PDF, choose JPEG or PNG, and download the first page as an image. Your file stays in this browser.</p>
+        <h1 id="pageTitle">Turn PDF pages into clean image files.</h1>
+        <p class="intro-copy">Drop in a PDF, choose JPEG or PNG, and download every page as an image (zipped if there's more than one). Your file stays in this browser.</p>
         <dl class="trust-strip" aria-label="Converter details">
           <div>
             <dt>Files</dt>
@@ -34,8 +34,8 @@
             <dd>20 MB</dd>
           </div>
           <div>
-            <dt>Page</dt>
-            <dd>First</dd>
+            <dt>Pages</dt>
+            <dd>Up to 20</dd>
           </div>
         </dl>
       </div>
@@ -67,7 +67,7 @@
             </select>
           </fieldset>
 
-          <button id="convertBtn" class="primary-action" type="button">Convert page</button>
+          <button id="convertBtn" class="primary-action" type="button">Convert</button>
         </div>
 
         <p id="error" class="error" hidden></p>
@@ -84,13 +84,14 @@
       <div class="rail-copy">
         <p class="rail-label">Workspace</p>
         <p id="status" class="status">Waiting for a PDF</p>
-        <a id="downloadLink" class="download" hidden download="converted.jpg">Download image</a>
+        <a id="downloadLink" class="download" hidden download="converted.jpg">Download</a>
       </div>
     </section>
 
     <canvas id="canvas" hidden></canvas>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

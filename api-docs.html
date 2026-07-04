@@ -10,7 +10,7 @@
   <main class="card docs-card">
     <a href="index.html" class="back-link">&larr; Back to converter</a>
     <h1>API</h1>
-    <p class="subtitle">Convert a PDF's first page to JPEG or PNG over plain HTTP &mdash; from n8n, curl, or any tool that can make a POST request.</p>
+    <p class="subtitle">Convert a PDF's pages to JPEG or PNG over plain HTTP &mdash; from n8n, curl, or any tool that can make a POST request.</p>
 
     <div class="status-grid">
       <div class="status-tile">
@@ -27,7 +27,7 @@
       </div>
       <div class="status-tile">
         <div class="label">Pages converted</div>
-        <div class="value">First page only</div>
+        <div class="value">Up to 20</div>
       </div>
     </div>
 
@@ -59,7 +59,7 @@
     </table>
 
     <h2>Response</h2>
-    <p class="subtitle">On success, returns the rendered image directly as the response body (<code class="inline">Content-Type: image/jpeg</code> or <code class="inline">image/png</code>). On error, returns a JSON body with an <code class="inline">error</code> field and a 4xx/5xx status code.</p>
+    <p class="subtitle">For a single-page PDF, returns the rendered image directly as the response body (<code class="inline">Content-Type: image/jpeg</code> or <code class="inline">image/png</code>). For a multi-page PDF, returns a <code class="inline">.zip</code> (<code class="inline">Content-Type: application/zip</code>) containing <code class="inline">page-1.jpg</code>, <code class="inline">page-2.jpg</code>, etc. &mdash; up to 20 pages; the <code class="inline">X-Total-Pages</code> and <code class="inline">X-Converted-Pages</code> response headers tell you if a longer PDF was truncated. On error, returns a JSON body with an <code class="inline">error</code> field and a 4xx/5xx status code.</p>
   </main>
 
   <script>

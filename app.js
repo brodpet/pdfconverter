@@ -4,6 +4,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_PAGES = 20;
 
 const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
@@ -87,38 +88,64 @@ function handleFile(file) {
 async function convertFile(file) {
   hideError();
   downloadLink.hidden = true;
-  setStatus("Rendering the first page...", "working");
+  setStatus("Reading the PDF...", "working");
   convertBtn.disabled = true;
   convertBtn.textContent = "Converting...";
 
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const page = await pdf.getPage(1);
-
-    const viewport = page.getViewport({ scale: 2 });
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d");
-
-    await page.render({ canvasContext: ctx, viewport }).promise;
-
+    const pageCount = Math.min(pdf.numPages, MAX_PAGES);
     const format = formatSelect.value;
-    const blob = await canvasToBlob(canvas, format, 1.0);
-
-    const url = URL.createObjectURL(blob);
     const ext = format === "image/png" ? "png" : "jpg";
-    downloadLink.href = url;
-    downloadLink.download = `${baseName(file.name)}.${ext}`;
-    downloadLink.hidden = false;
-    setStatus(`Ready as ${ext.toUpperCase()}.`, "ready");
+
+    if (pageCount === 1) {
+      const blob = await renderPageToBlob(pdf, 1, format);
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      downloadLink.download = `${baseName(file.name)}.${ext}`;
+      downloadLink.hidden = false;
+      setStatus(`Ready as ${ext.toUpperCase()}.`, "ready");
+    } else {
+      const zip = new JSZip();
+      for (let i = 1; i <= pageCount; i++) {
+        setStatus(`Rendering page ${i} of ${pageCount}...`, "working");
+        const blob = await renderPageToBlob(pdf, i, format);
+        zip.file(`page-${i}.${ext}`, blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      downloadLink.href = url;
+      downloadLink.download = `${baseName(file.name)}.zip`;
+      downloadLink.hidden = false;
+
+      const truncated = pdf.numPages > MAX_PAGES;
+      setStatus(
+        truncated
+          ? `Ready. Converted ${pageCount} of ${pdf.numPages} pages (${MAX_PAGES}-page limit).`
+          : `Ready. ${pageCount} pages zipped as ${ext.toUpperCase()}.`,
+        "ready"
+      );
+    }
   } catch (err) {
     showError("Couldn't convert this PDF. It may be corrupt or unsupported.");
     setStatus("Conversion stopped. Check the file and try again.");
   } finally {
     convertBtn.disabled = false;
-    convertBtn.textContent = "Convert page";
+    convertBtn.textContent = "Convert";
   }
+}
+
+async function renderPageToBlob(pdf, pageNumber, format) {
+  const page = await pdf.getPage(pageNumber);
+  const viewport = page.getViewport({ scale: 2 });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext("2d");
+
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  return canvasToBlob(canvas, format, 1.0);
 }
 
 function canvasToBlob(canvas, type, quality) {
